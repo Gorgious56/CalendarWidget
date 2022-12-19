@@ -3,7 +3,7 @@ import calendar
 
 from bpy.types import (
     Panel,
-    World,
+    Scene,
     PropertyGroup,
     Operator,
 )
@@ -31,7 +31,7 @@ bl_info = {
 class CalendarProps(PropertyGroup):
     year: IntProperty(min=1, soft_min=1900, soft_max=2100,
                       max=9999, default=datetime.now().year)
-    month: IntProperty(min=1, max=12, default=1)
+    month: IntProperty(min=1, max=12, default=datetime.now().month)
     day: IntProperty(min=1, max=31)
     hour: IntProperty(min=0, max=23, default=datetime.now().hour)
     minute: IntProperty(min=0, max=59, default=datetime.now().minute)
@@ -39,7 +39,7 @@ class CalendarProps(PropertyGroup):
 
 
 class Calendar_OT_Change_Date(Operator):
-    """Change date in the world properties"""
+    """Change date in the scene properties"""
     bl_idname = "calendar.change_date"
     bl_label = "Change Date"
     bl_options = {'UNDO', 'INTERNAL'}
@@ -52,7 +52,7 @@ class Calendar_OT_Change_Date(Operator):
     second: IntProperty()
 
     def execute(self, context):
-        props = context.scene.world.calendar_props
+        props = context.scene.calendar_props
         if self.month > 12:
             self.year += 1
             self.month = 1
@@ -85,7 +85,7 @@ class CalendarPanel(Panel):
     bl_category = 'Calendar'
 
     def draw(self, context):
-        props = context.scene.world.calendar_props
+        props = context.scene.calendar_props
         day = props.day
         month = props.month
         year = props.year
@@ -187,14 +187,18 @@ classes = (
 def register():
     for cls in classes:
         register_class(cls)
-    World.calendar_props = PointerProperty(type=CalendarProps)
+    Scene.calendar_props = PointerProperty(type=CalendarProps)
 
 
 def unregister():
-    del World.calendar_props
+    del Scene.calendar_props
     for cls in reversed(classes):
         unregister_class(cls)
 
 
 if __name__ == "__main__":
+    # This will create a subpanel in the "N" panel in the 3D Viewport
+    # To get the selected Date / time :
+    # props = bpy.context.scene.calendar_props
+    # print(props.year, props.month, props.day, props.hour, props.minute, props.second)
     register()
